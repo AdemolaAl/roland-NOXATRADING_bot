@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+.idea/
+.vscode/
+
+# Backup zips dropped at the repo root (image-asset bundles, "Foo 2.zip" copies, etc.)
+*.zip
+
+# Duplicate asset drop-offs (e.g. the "Foo 2/" macOS copy of an existing folder)
+*[ ]2/

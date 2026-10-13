@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: moneygbt_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moneygbt_test npm run db:migrate
+      - run: TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moneygbt_test npm test -- --runInBand
+        env:
+          BOT_TOKEN: '1234567890:fake-ci-token'
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/moneygbt_test
+          SESSION_ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
+          ADMIN_TELEGRAM_IDS: '1'
+          SUPER_ADMIN_TELEGRAM_ID: '1'
+          ALERT_CHANNEL_ID: '-1'
+          IQ_SDK_HTTP_URL: 'https://example.com'
+          IQ_SDK_WS_URL: 'wss://example.com/ws'

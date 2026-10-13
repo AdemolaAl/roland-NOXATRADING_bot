@@ -1,0 +1,16 @@
+-- Persist the user's IQ Option password (encrypted with
+-- SESSION_ENCRYPTION_KEY, same AES-GCM scheme used for
+-- iq_session_token) so the bot can silently re-authenticate
+-- when the SDK reports "authentication is failed" mid-session.
+--
+-- Before this column, every session-expiry event punted the user to
+-- LOGIN_EMAIL and made them re-enter credentials. With it stored,
+-- loadTradingClientForUser attempts a silent IqClient.login() using
+-- the cached email + password and only surfaces the friction to the
+-- user when the credentials themselves are stale (user changed
+-- their IQ password externally, account suspended, etc.).
+--
+-- No backfill — column populates the next time each user logs in
+-- manually. Users who haven't logged in after deploy still see the
+-- legacy re-prompt flow until they do.
+ALTER TABLE users ADD COLUMN iq_password_encrypted TEXT;
